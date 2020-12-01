@@ -82,12 +82,16 @@ export default function UserPostCard({
         title={title}
         subheader={subheader}
       />
+
+
       <CardMedia className={classes.media} image={imgSrc} title={imgTitle} />
+
       <CardContent>
         <Typography variant="body2" color="textSecondary" component="p">
           {description}
         </Typography>
       </CardContent>
+
       <CardActions disableSpacing>
         <IconButton aria-label="add to favorites">
           <FavoriteIcon />
@@ -106,9 +110,12 @@ export default function UserPostCard({
           <ExpandMoreIcon />
         </IconButton>
       </CardActions>
+
+
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>
           {!comments ? (
+            // yorum yok ise CircularProgress (loading amblemi) çalışsın var ise de yorum yazdırılsın demektir.
             <CircularProgress />
           ) : comments.length ? (
             comments.map((comment) => {
