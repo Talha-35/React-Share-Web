@@ -1,57 +1,124 @@
-import React from "react";
-import { useHistory } from "react-router-dom";
-import PropTypes from "prop-types";
-
+import React, { useContext, useCallback, useMemo } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import Card from "@material-ui/core/Card";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
-import Button from "@material-ui/core/Button";
+import { useHistory } from "react-router-dom";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
+import IconButton from "@material-ui/core/IconButton";
+import HomeIcon from "@material-ui/icons/Home";
+import AccountCircle from "@material-ui/icons/AccountCircle";
+import MenuItem from "@material-ui/core/MenuItem";
+import Menu from "@material-ui/core/Menu";
+import { FirebaseAuthContext } from "../context/AuthContext";
+import firebase from "../firebase/firebase.utils";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   root: {
-    maxWidth: 345,
+    flexGrow: 1,
+    position:'sticky',
+    top:0,
+    zIndex:1,
   },
-  media: {
-    height: 140,
+  menuButton: {
+    marginRight: theme.spacing(2),
   },
-});
+  title: {
+    flexGrow: 1,
+  },
+  accountCircle: {
+    marginLeft: 5,
+  },
+}));
 
-export default function MediaCard({ id, userImage, userName, userEmail }) {
+export default function Navbar() {
+  const { currentUser } = useContext(FirebaseAuthContext);
   const classes = useStyles();
   const history = useHistory();
 
+  const [auth, setAuth] = React.useState(true);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleHomeClick = useCallback(() => {
+    history.push(`/`);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
+
+  const handleSignOut = useCallback(() => {
+    firebase.signOut();
+    history.push("/login");
+  }, []);
+
+  const handleLoginClick = () => {
+    history.push("/login");
+  };
+
+  const handleRegisterClick = () => {
+    history.push("/register");
+  };
+
   return (
-    <Card className={classes.root}>
-      <CardActionArea onClick={() => history.push(`/user/${id}`)}>
-        <CardMedia className={classes.media} image={userImage} />
-        <CardContent>
-          <Typography gutterBottom variant="h5" component="h2">
-            {userName}
+    <div className={classes.root}>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            edge="start"
+            className={classes.menuButton}
+            color="inherit"
+            aria-label="menu"
+            onClick={handleHomeClick}
+          >
+            <HomeIcon />
+          </IconButton>
+          <Typography variant="h6" className={classes.title}>
+            React Share
           </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            {userEmail}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-      <CardActions>
-        <Button size="small" color="primary">
-          View Full Profile
-        </Button>
-        <Button size="small" color="primary">
-          View User Posts
-        </Button>
-      </CardActions>
-    </Card>
+          {currentUser ? (
+            <div>
+              <IconButton
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleMenu}
+                color="inherit"
+              >
+                {currentUser?.displayName}
+                <AccountCircle className={classes.accountCircle} />
+              </IconButton>
+              <Menu
+                id="menu-appbar"
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                open={open}
+                onClose={handleClose}
+              >
+                <MenuItem onClick={handleClose}>Profile</MenuItem>
+                <MenuItem onClick={handleClose}>My account</MenuItem>
+                <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
+              </Menu>
+            </div>
+          ) : (
+            <>
+              <MenuItem onClick={handleLoginClick}>Sign in</MenuItem>
+              <MenuItem onClick={handleRegisterClick}>Sign up</MenuItem>
+            </>
+          )}
+        </Toolbar>
+      </AppBar>
+    </div>
   );
 }
-
-MediaCard.propTypes = {
-  id: PropTypes.string.isRequired,
-  userImage: PropTypes.string,
-  userName: PropTypes.string,
-  userEmail: PropTypes.string,
-};
