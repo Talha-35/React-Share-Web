@@ -1,24 +1,38 @@
+import { useContext } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
+import Main from "../pages/Main";
 import Signup from "../pages/Signup";
 import Signin from "../pages/Signin";
-import Main from "../pages/Main";
+import ForgotPassword from "../pages/ForgotPassword";
 import UserDetail from "../pages/UserDetail";
+import UserPost from "../pages/UserPost";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-
+import { FirebaseAuthContext } from "../context/AuthContext";
 
 function AppRouter() {
+  const { currentUser } = useContext(FirebaseAuthContext);
 
   return (
     <Router>
       <Navbar />
       <Switch>
-        <Route exact path="/" component={Main} />        
         <Route exact path="/register" component={Signup} />
-        {/* bu ikisine girmez ise ototmatik maine gider  */}
-        <Route path="/login" component={Signin} />
-        <Route exact path="/user/:id" component={UserDetail} />
+        <Route exact path="/login" component={Signin} />
+        <Route exact path="/forgot-password" component={ForgotPassword} />
+        <Route
+          exact
+          path="/user/:id"
+          component={currentUser ? UserDetail : Signin}
+        />
+        <Route
+          exact
+          path="/user/:id/post"
+          component={currentUser ? UserPost : Signin}
+          />
+          {/* exact sadece main de yok o yüzden diğerlerine girmez ise ototmatik sayfa maine gider demektir */}
+        <Route path="/" component={Main} />
       </Switch>
       <Footer />
     </Router>
