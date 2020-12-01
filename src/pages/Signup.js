@@ -1,26 +1,41 @@
 import React from "react";
-import { Button, TextField, Grid, Container } from "@material-ui/core";
+import {
+  Button,
+  TextField,
+  Grid,
+  Container,
+  Avatar,
+  Typography,
+} from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { useFormik } from "formik";
 import firebase from "../firebase/firebase.utils";
 import * as Yup from "yup";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 
-const signInValidationSchema = Yup.object().shape({
-  displayName: Yup.string().required("displayName is empty"),
-  email: Yup.string().email("invalid email").required("email is empty"),
-  // bu şekilde yanlış yazım hatalrını kontrol ediyoruz
+const signUpValidationSchema = Yup.object().shape({
+  displayName: Yup.string().required("Display Name is required!!"),
+  email: Yup.string().email("Invalid Email").required("Email is required!!"),
+   // bu şekilde yanlış yazım hatalrını kontrol ediyoruz
   password: Yup.string()
     .required("No password provided.")
     .min(8, "Password is too short - should be 8 chars minimum."),
 });
 
-const stylesFunc = makeStyles({
+const stylesFunc = makeStyles((theme) => ({
   wrapper: {
     marginTop: "10rem",
     height: "calc(100vh - 19.0625rem)",
+    textAlign: "center",
   },
-});
+  avatar: {
+    margin: "1rem auto",
+    backgroundColor: theme.palette.secondary.main,
+  },
+  signUp: {
+    margin: "1rem",
+  },
+}));
 
 function Signup() {
   const formik = useFormik({
@@ -29,11 +44,11 @@ function Signup() {
       email: "",
       password: "",
     },
-    validationSchema: signInValidationSchema,
+    validationSchema: signUpValidationSchema,
     onSubmit: (values) => {
       // alert(JSON.stringify(values, null, 2));
+   
       // üstteki girilen email şifre vb bilgileri alert yaptırır.
-
       firebase.register(values.displayName, values.email, values.password);
     },
   });
@@ -45,6 +60,12 @@ function Signup() {
 
   return (
     <Container className={signupStyles.wrapper} maxWidth="sm">
+      <Avatar className={signupStyles.avatar}>
+        <LockOutlinedIcon />
+      </Avatar>
+      <Typography className={signupStyles.signUp} variant="h4">
+        Sign Up
+      </Typography>
       <form onSubmit={formik.handleSubmit}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
@@ -54,13 +75,16 @@ function Signup() {
               variant="outlined"
               fullWidth
               // fullwith gridin tamamını kapla demektir
-              value={formik.values.displayName}
-              onChange={formik.handleChange}
-              error={formik.errors.displayName}
-              // bu yukardaki cğmle error var ise true dön demektir.
+
+
+              {...formik.getFieldProps("displayName")}
+              error={formik.touched.displayName && formik.errors.displayName}
+               // bu yukardaki cğmle error var ise true dön demektir.
               // bu şekilde yapar isek boş verince inputu kırmızı yapar
-              helperText={formik.errors.displayName}
-              // bu şekilde input altında yazı çıkar ama küçük yazar
+              helperText={
+                formik.touched.displayName && formik.errors.displayName
+              }
+                // bu şekilde input altında yazı çıkar ama küçük yazar
             />
           </Grid>
           <Grid item xs={12}>
@@ -69,13 +93,9 @@ function Signup() {
               label="Email"
               variant="outlined"
               fullWidth
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              error={formik.errors.email}
-              // bu yukardaki cğmle error var ise true dön demektir.
-              // bu şekilde yapar isek boş verince inputu kırmızı yapar
-              helperText={formik.errors.email}
-              // bu şekilde input altında yazı çıkar ama küçük yazar
+              {...formik.getFieldProps("email")}
+              error={formik.touched.email && formik.errors.email}
+              helperText={formik.touched.email && formik.errors.email}
             />
           </Grid>
           <Grid item xs={12}>
@@ -85,13 +105,9 @@ function Signup() {
               variant="outlined"
               type="password"
               fullWidth
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              error={formik.errors.password}
-              // bu yukardaki cğmle error var ise true dön demektir.
-              // bu şekilde yapar isek boş verince inputu kırmızı yapar
-              helperText={formik.errors.password}
-              // bu şekilde input altında yazı çıkar ama küçük yazar
+              {...formik.getFieldProps("password")}
+              error={formik.touched.password && formik.errors.password}
+              helperText={formik.touched.password && formik.errors.password}
             />
           </Grid>
           <Grid item xs={12}>
@@ -103,12 +119,15 @@ function Signup() {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleGoogleButtonClick}
               fullWidth
+              onClick={handleGoogleButtonClick}
             >
               SignUp with Google
             </Button>
           </Grid>
+          {/* 
+            //TODO: Add sign in text & links
+            */}
         </Grid>
       </form>
     </Container>

@@ -1,14 +1,21 @@
-import React from "react";
-import { Button, TextField, Grid, Container, Avatar ,Typography } from "@material-ui/core";
+import React, { useState } from "react";
+import {
+  Button,
+  TextField,
+  Grid,
+  Container,
+  Avatar,
+  Typography,
+} from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import firebase from "../firebase/firebase.utils";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-
 const signInValidationSchema = Yup.object().shape({
-  email: Yup.string().email("invalid email").required("email is empty"),
-  // bu şekilde yanlış yazım hatalrını kontrol ediyoruz. yani email girişlerini vs boş bıraktığın zaman hata veriyor
+  email: Yup.string().email("Invalid Email").required("Email is required!!"),
+    // bu şekilde yanlış yazım hatalrını kontrol ediyoruz. yani email girişlerini vs boş bıraktığın zaman hata veriyor
+
   password: Yup.string()
     .required("No password provided.")
     .min(8, "Password is too short - should be 8 chars minimum."),
@@ -22,7 +29,10 @@ const stylesFunc = makeStyles((theme) => ({
   },
   avatar: {
     margin: "1rem auto",
-    backgroundColor: theme.palette.secondary.main,
+    backgroundColor: theme.palette.primary.main,
+  },
+  signIn: {
+    margin: "1rem",
   },
 }));
 
@@ -32,6 +42,7 @@ const initialValues = {
 };
 
 function Signin() {
+  const [loginError, setLoginError] = useState(null);
   const signinStyles = stylesFunc();
 
   const handleGoogleButtonClick = () => {
@@ -40,24 +51,25 @@ function Signin() {
 
   const handleFormSubmit = (values) => {
     // alert(JSON.stringify(values, null, 2));
-    firebase.signIn(values.email, values.password);
+    firebase.signIn(values.email, values.password).then((res) => {
+      res ? setLoginError(res) : setLoginError(null);
+    });
   };
 
   return (
     <Container className={signinStyles.wrapper} maxWidth="sm">
-      <Avatar>
-        {/* avatar içine alarak ıconu yuvarlak içine aldık */}
+      <Avatar className={signinStyles.avatar}>
+           {/* avatar içine alarak ıconu yuvarlak içine aldık */}
         <LockOutlinedIcon />
       </Avatar>
-      <Typography variant='h4' >
-          Sıgn In
-        </Typography>
+      <Typography className={signinStyles.signIn} variant="h4">
+        Sign In
+      </Typography>
       <Formik
         initialValues={initialValues}
         validationSchema={signInValidationSchema}
         onSubmit={handleFormSubmit}
       >
-        
         {({ handleSubmit, handleChange, values, errors }) => (
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
@@ -75,6 +87,7 @@ function Signin() {
                   helperText={errors.email}
                   // bu şekilde input altında yazı çıkar ama küçük yazar
                 />
+                
                 {/* <p>{errors.email}</p> */}
                 {/* üstteki cümleyi yazdık çünkü validation kütüphenaseinden gelen otomatik error mesajı görelim istedik */}
               </Grid>
@@ -88,7 +101,7 @@ function Signin() {
                   value={values.password}
                   onChange={handleChange}
                   error={errors.password}
-                  // bu yukardaki cğmle error var ise true dön demektir.
+                 // bu yukardaki cğmle error var ise true dön demektir.
                   // bu şekilde yapar isek boş verince inputu kırmızı yapar
                   helperText={errors.password}
                   // bu şekilde input altında yazı çıkar ama küçük yazar
@@ -115,6 +128,12 @@ function Signin() {
                 </Button>
               </Grid>
             </Grid>
+            <p style={{ textAlign: "center", color: "red" }}>
+              <small>{loginError}</small>
+            </p>
+            {/* 
+            //TODO: Add register & forgot password text & links
+            */}
           </form>
         )}
       </Formik>
